@@ -2,6 +2,8 @@
 
 This is a simple Contacts application built with ReactJS that allows you to browse your contacts. The application fetches data from https://jsonplaceholder.typicode.com/users.
 
+You can preview the application by navigating to http://ec2-origin.liao.sh:3425/ in a web browser. 
+
 ## Prerequisites
 
 To run this application, you will need to have Node.js installed on your machine. 
