@@ -1,21 +1,22 @@
 // ------------------------------------------------------------------------------//
 // ---------------------------------- TESTING ---------------------------------- //
 // ------------------------------------------------------------------------------//
-// var storeIds = [175, 42, 0, 9]
-// var transactionIds = [9675, 23, 123, 7]
+var storeIds = [175, 42, 0, 9]
+var transactionIds = [9675, 23, 123, 7]
 
-// storeIds.forEach(function (storeId) {
-//     transactionIds.forEach(function (transactionId) {
-//         var shortCode = generateShortCode(storeId, transactionId);
-//         var decodeResult = decodeShortCode(shortCode);
-//         // $("#test-results").append("<div>" + storeId + " - " + transactionId + ": " + shortCode + "</div>");
-//         console.log("Length <= 9", shortCode.length <= 9);
-//         console.log("Is String", (typeof shortCode === 'string'));
-//         console.log("Is Today", IsToday(decodeResult.shopDate));
-//         console.log("StoreId", storeId === decodeResult.storeId);
-//         console.log("TransId", transactionId === decodeResult.transactionId);
-//     })
-// })
+storeIds.forEach(function (storeId) {
+    transactionIds.forEach(function (transactionId) {
+        var shortCode = generateShortCode(storeId, transactionId);
+        var decodeResult = decodeShortCode(shortCode);
+        console.log(shortCode);
+        // $("#test-results").append("<div>" + storeId + " - " + transactionId + ": " + shortCode + "</div>");
+        console.log("Length <= 9", shortCode.length <= 9);
+        console.log("Is String", (typeof shortCode === 'string'));
+        console.log("Is Today", IsToday(decodeResult.shopDate));
+        console.log("StoreId", storeId === decodeResult.storeId);
+        console.log("TransId", transactionId === decodeResult.transactionId);
+    })
+})
 
 // ------------------------------------------------------------------------------//
 // ------------------------------ Helper Function ------------------------------ //
@@ -31,21 +32,21 @@ function padCodeLength(code, length) {
 }
 
 function encodeStoreId(storeId) {
-    var digit = Math.floor(storeId / 20);
-    var varterCode = (storeId % 20) + 65; // convert 0-19 to A-Z ASCII code (65-90)
-    var varter = String.fromCharCode(varterCode);
-    return digit.toString() + varter;
+    var digit = Math.floor(storeId / 21);
+    var charCode = (storeId % 21) + 65; // convert 0-20 to A-V ASCII code (65-86)
+    var char = String.fromCharCode(charCode);
+    return digit.toString() + char;
 }
 
 function decodeStoreId(storeCode) {
     var digit = parseInt(storeCode.charAt(0));
-    var varterCode = storeCode.charCodeAt(1) - 65; // convert A-Z ASCII code (65-90) to 0-19
-    var storeId = digit * 20 + varterCode;
+    var charCode = storeCode.charCodeAt(1) - 65; // convert A-V ASCII code (65-86) to 0-20
+    var storeId = digit * 21 + charCode;
     return storeId;
 }
 
 function encodeTransactionId(transactionId) {
-    var base = 26; // 26 varters in the alphabet
+    var base = 26; // 26 chars in the alphabet
     var offset = 65; // ASCII code for 'A'
     var digits = [];
     for (var i = 0; i < 3; i++) {
@@ -61,6 +62,7 @@ function decodeTransactionId(transactionIdStr) {
     // Convert the transactionIdStr to a decimal number
     var transactionId = 0;
     for (var i = 0; i < 3; i++) {
+    // [O, I, D]
       transactionId += (transactionIdStr.charCodeAt(i) - 65) * (26 ** (2 - i));
     }
     
@@ -69,28 +71,37 @@ function decodeTransactionId(transactionIdStr) {
 
 function encodeDate(dateStr) {
     // Extract the year, month, and day from the dateStr
-    var year = dateStr.slice(0, 2);
-    var month = dateStr.slice(2, 4);
-    var day = dateStr.slice(4);
+    var year = dateStr.slice(0, 2); // 23
+    var month = dateStr.slice(2, 4); // 03
+    var day = dateStr.slice(4); // 20
     
     // Convert the year to a single digit (0-9)
     var yearDigit = parseInt(year) % 10;
     
-    // Convert the month to a varter (A-Z)
-    var monthvarter = String.fromCharCode(parseInt(month) + 64);
+    // Convert the month to a char (A-Z)
+    var monthChar = String.fromCharCode(parseInt(month) + 64);
     
-    // Convert the day to a two-varter code (0-9A-Z)
-    var dayDigit = parseInt(day) % 10;
-    var dayvarter = String.fromCharCode(parseInt(day) + 55);
+    // Got the 1st digit of day
+    var dayDigitOne =  day.charAt(0);
     
-    // Concatenate the year digit, month varter, and day code
-    var code = `${yearDigit}${monthvarter}${dayDigit}${dayvarter}`;
+    // match dayDigit 0-3 to E-H instead of A-Z
+    var dayCharOne = String.fromCharCode(parseInt(dayDigitOne) + 69);
+    
+    // Got the 2nd digit of day
+    var dayDigTwo =  day.charAt(1);
+    
+    // Convert 0-9 to I-R
+    var dayCharTwo = String.fromCharCode(parseInt(dayDigTwo) + 73);
+    
+    // Concatenate the year digit, month char, and day code
+    var code = `${yearDigit}${monthChar}${dayCharOne}${dayCharTwo}`;
+
     return code;
   }
   
 
 //   function decodeDate(code) {
-//     // Extract the year digit, month varter, and day code from the code
+//     // Extract the year digit, month char, and day code from the code
 //     var yearDigit = parseInt(code.charAt(0));
 //     var month = code.charAt(1);
 //     var dayDigit = parseInt(code.charAt(2));
@@ -99,7 +110,7 @@ function encodeDate(dateStr) {
 //     // Convert the year digit back to a two-digit year
 //     var year = `${parseInt(new Date().getFullYear().toString().slice(0, 1))}${yearDigit}`;
     
-//     // Convert the month varter back to a two-digit month
+//     // Convert the month char back to a two-digit month
 //     var monthNum = month.charCodeAt(0) - 64;
 //     var monthStr = (monthNum < 10) ? `0${monthNum}` : `${monthNum}`;
     
@@ -121,9 +132,9 @@ function generateShortCode(storeId, transactionId) {
     var storeIdStr = padCodeLength(storeId, 3); // 175
     var transactionIdStr = padCodeLength(transactionId, 4); // 9675
     
-    var encodedStoreId = encodeStoreId(storeIdStr);
-    var encodedTransactionId = encodeTransactionId(transactionIdStr);
-    var encodedDate = encodeDate(dateStr);
+    var encodedStoreId = encodeStoreId(storeIdStr); // 0-9+A-Z
+    var encodedTransactionId = encodeTransactionId(transactionIdStr); // A-Z+A-Z+A-Z
+    var encodedDate = encodeDate(dateStr); // 
     
     return encodedStoreId + encodedTransactionId + encodedDate;
 }
